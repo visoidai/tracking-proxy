@@ -1,5 +1,5 @@
 {
-	"name": "mixpanel-tracking-proxy",
+	"name": "mp",
 	"options": {
 		"allow-unauthenticated": true,
 		"memory": "512Mi",
