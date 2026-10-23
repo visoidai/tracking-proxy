@@ -1,6 +1,34 @@
 # Nginx Proxy for Mixpanel
 An example nginx config that serves as a proxy to Mixpanel's Ingestion API and JavaScript library endpoints. To learn more, visit our [docs on Tracking via Proxy](https://docs.mixpanel.com/docs/tracking/how-tos/tracking-via-proxy).
 
+## PostHog relay
+
+`/relay/` forwards PostHog browser requests to the EU API. Requests under
+`/relay/static/` and `/relay/array/` use the EU asset host. The `/relay` prefix
+is removed before forwarding, preserving the rest of the path and query.
+
+PostHog routes strip cookies and authorization headers, preserve compressed
+request bodies, and allow CORS from `https://app.visoid.com` and Visoid deploy
+previews. These settings apply only to `/relay/`. Existing Mixpanel routes,
+headers, request limits, and the container configuration are unchanged.
+
+Run the container verification with Docker and Node.js 20 or newer:
+
+```sh
+node tests/verify-proxy.mjs
+```
+
+The check exercises the real nginx configuration against a local mock upstream
+and tests both providers, including compressed recordings, large requests,
+cookies, CORS, and query preservation. It sends no events to live projects.
+
+Roll out the proxy revision first. Verify Mixpanel ingestion on its existing
+routes and PostHog ingestion through `/relay/`, then set Visoid's
+`PUBLIC_POSTHOG_PROXY_URL` to `https://mp-6ncg6buspa-ez.a.run.app/relay` and
+redeploy the app. Keep `PUBLIC_MIXPANEL_PROXY_URL` and the direct server-side
+`PUBLIC_POSTHOG_HOST` unchanged. Both providers share the existing `mp` service
+in project `mixpanel-tracking-proxy`, region `europe-west4`.
+
 
 ## Installation
 
